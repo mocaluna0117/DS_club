@@ -3,25 +3,34 @@ import { useQuery, useMutation } from '@apollo/client';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Container, Heading, VStack, Box, Text, Image, Spinner, Center,
-  Flex, Button, Dialog,
+  Flex, Button, HStack, Badge, Dialog,
 } from '@chakra-ui/react';
-import { GET_ACTIVITIES, REMOVE_POST } from '../graphql/queries';
+import { GET_ACTIVITIES, GET_ALL_POSTS_ADMIN, REMOVE_POST } from '../graphql/queries';
 import { useAuth } from '../context/AuthContext';
 
 export function ActivityPage() {
   const { token } = useAuth();
-  const { data, loading, error, refetch } = useQuery(GET_ACTIVITIES, { fetchPolicy: 'cache-and-network' });
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
 
-  const [removePost, { loading: deleting }] = useMutation(REMOVE_POST, {
-    onCompleted: () => {
-      setDeleteTarget(null);
-      void refetch();
-    },
+  const { data: publicData, loading: publicLoading } = useQuery(GET_ACTIVITIES, {
+    fetchPolicy: 'cache-and-network',
+    skip: !!token,
+  });
+  const { data: adminData, loading: adminLoading, refetch } = useQuery(GET_ALL_POSTS_ADMIN, {
+    fetchPolicy: 'cache-and-network',
+    skip: !token,
   });
 
+  const [removePost, { loading: deleting }] = useMutation(REMOVE_POST, {
+    onCompleted: () => { setDeleteTarget(null); void refetch(); },
+  });
+
+  const loading = token ? adminLoading : publicLoading;
+  const posts = token
+    ? (adminData?.allPosts ?? []).filter((p) => p.type === 'ACTIVITY')
+    : (publicData?.activities ?? []);
+
   if (loading) return <Center py={20}><Spinner size="xl" color="blue.500" /></Center>;
-  if (error) return <Center py={20}><Text color="gray.500">エラーが発生しました。</Text></Center>;
 
   return (
     <Container as="main" maxW="800px" py={12}>
@@ -34,11 +43,13 @@ export function ActivityPage() {
         )}
       </Flex>
       <Text color="gray.500" mb={8}>サークルの普段の活動を記録しています</Text>
-      {data?.activities.length === 0 && (
+
+      {posts.length === 0 && (
         <Center py={8}><Text color="gray.400">まだ活動記録がありません。</Text></Center>
       )}
+
       <VStack gap={6} align="stretch">
-        {data?.activities.map((post) => (
+        {posts.map((post) => (
           <Box key={post.id} position="relative">
             <RouterLink to={`/activities/${post.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <Box
@@ -46,9 +57,10 @@ export function ActivityPage() {
                 flexDir="column"
                 bg="white"
                 border="1px solid"
-                borderColor="gray.200"
+                borderColor={'published' in post && !post.published ? 'gray.300' : 'gray.200'}
                 borderRadius="xl"
                 overflow="hidden"
+                opacity={'published' in post && !post.published ? 0.75 : 1}
                 _hover={{ boxShadow: 'md' }}
                 transition="box-shadow 0.2s"
               >
@@ -56,7 +68,12 @@ export function ActivityPage() {
                   <Image src={post.coverImage} alt={post.title} h="200px" objectFit="cover" />
                 )}
                 <Box p={6}>
-                  <Heading as="h2" size="lg" mb={2} color="gray.800">{post.title}</Heading>
+                  <Flex align="center" gap={2} mb={2}>
+                    <Heading as="h2" size="lg" color="gray.800">{post.title}</Heading>
+                    {'published' in post && !post.published && (
+                      <Badge colorPalette="gray" size="sm" flexShrink={0}>下書き</Badge>
+                    )}
+                  </Flex>
                   {post.excerpt && <Text color="gray.500" lineHeight="tall" mb={4}>{post.excerpt}</Text>}
                   <Box display="flex" gap={4} color="gray.400" fontSize="sm">
                     <Text>{post.author.name}</Text>
@@ -66,41 +83,32 @@ export function ActivityPage() {
               </Box>
             </RouterLink>
             {token && (
-              <Button
-                size="xs"
-                colorPalette="red"
-                variant="outline"
-                position="absolute"
-                top={3}
-                right={3}
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: post.id, title: post.title }); }}
-              >
-                削除
-              </Button>
+              <HStack position="absolute" top={3} right={3} gap={2}>
+                <Button asChild size="xs" colorPalette="blue" variant="solid">
+                  <RouterLink to={`/admin/edit-post/${post.id}`}>編集</RouterLink>
+                </Button>
+                <Button size="xs" colorPalette="red" variant="solid"
+                  onClick={(e) => { e.preventDefault(); setDeleteTarget({ id: post.id, title: post.title }); }}>
+                  削除
+                </Button>
+              </HStack>
             )}
           </Box>
         ))}
       </VStack>
 
-      {/* 削除確認ダイアログ */}
       <Dialog.Root open={!!deleteTarget} onOpenChange={(e) => !e.open && setDeleteTarget(null)}>
         <Dialog.Backdrop />
         <Dialog.Positioner>
           <Dialog.Content>
-            <Dialog.Header>
-              <Dialog.Title>活動記録を削除</Dialog.Title>
-            </Dialog.Header>
+            <Dialog.Header><Dialog.Title>活動記録を削除</Dialog.Title></Dialog.Header>
             <Dialog.Body>
               <Text>「{deleteTarget?.title}」を削除しますか？この操作は元に戻せません。</Text>
             </Dialog.Body>
             <Dialog.Footer>
               <Button variant="outline" size="sm" onClick={() => setDeleteTarget(null)}>キャンセル</Button>
-              <Button
-                colorPalette="red"
-                size="sm"
-                loading={deleting}
-                onClick={() => deleteTarget && void removePost({ variables: { id: deleteTarget.id } })}
-              >
+              <Button colorPalette="red" size="sm" loading={deleting}
+                onClick={() => deleteTarget && void removePost({ variables: { id: deleteTarget.id } })}>
                 削除する
               </Button>
             </Dialog.Footer>

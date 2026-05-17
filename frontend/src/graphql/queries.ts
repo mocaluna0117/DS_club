@@ -124,6 +124,8 @@ export const GET_ALL_POSTS_ADMIN = graphql(`
     allPosts {
       id
       title
+      excerpt
+      coverImage
       type
       published
       createdAt
