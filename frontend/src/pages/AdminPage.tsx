@@ -225,6 +225,9 @@ function PostList({ posts, onDelete, onTogglePublish }: {
             <Button size="xs" variant="outline" onClick={() => onTogglePublish(p)}>
               {p.published ? '非公開にする' : '公開する'}
             </Button>
+            <Button asChild size="xs" colorPalette="blue" variant="outline">
+              <RouterLink to={`/admin/edit-post/${p.id}`}>編集</RouterLink>
+            </Button>
             <Button size="xs" colorPalette="red" variant="outline"
               onClick={() => onDelete({ id: p.id, title: p.title })}>
               削除
