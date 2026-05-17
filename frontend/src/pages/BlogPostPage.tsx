@@ -6,6 +6,7 @@ import {
   Button, Flex, Dialog,
 } from '@chakra-ui/react';
 import 'katex/dist/katex.min.css';
+import '../components/editor/editor.css';
 import { GET_POST, REMOVE_POST } from '../graphql/queries';
 import { useAuth } from '../context/AuthContext';
 
@@ -56,9 +57,8 @@ export function BlogPostPage() {
         <Text>{new Date(post.createdAt).toLocaleDateString('ja-JP')}</Text>
       </Box>
       <Box
-        lineHeight="tall"
-        color="gray.700"
-        dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br/>') }}
+        className="tiptap"
+        dangerouslySetInnerHTML={{ __html: post.content }}
       />
 
       {/* 削除確認ダイアログ */}
