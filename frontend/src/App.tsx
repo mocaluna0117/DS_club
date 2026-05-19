@@ -22,7 +22,7 @@ function App() {
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <Flex minH="100vh" flexDir="column">
             <Navbar />
-            <Box flex={1}>
+            <Box flex={1} pt="76px">
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/members" element={<MembersPage />} />

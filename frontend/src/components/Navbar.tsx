@@ -17,7 +17,7 @@ export function Navbar() {
   const closeMenu = () => setOpen(false);
 
   return (
-    <Box as="nav" bg="white" borderBottom="1px solid" borderColor="gray.200" position="sticky" top={0} zIndex={100}>
+    <Box as="nav" bg="white" borderBottom="1px solid" borderColor="gray.200" position="fixed" top={0} left={0} right={0} zIndex={100}>
       {/* メインバー */}
       <Flex px={{ base: 4, md: 8 }} py={3} align="center" justify="space-between" position="relative">
         {/* ロゴ（アイコン + デスクトップのみテキスト） */}
