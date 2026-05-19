@@ -18,12 +18,12 @@ export function HomePage() {
         bgGradient="to-br"
         gradientFrom="blue.700"
         gradientTo="purple.600"
-        py={12}
-        px={8}
+        py={{ base: 8, md: 12 }}
+        px={{ base: 4, md: 8 }}
         textAlign="center"
       >
         <VStack gap={5} maxW="640px" mx="auto">
-          <Heading as="h1" size="3xl" color="white" fontWeight="extrabold">
+          <Heading as="h1" size={{ base: '2xl', md: '3xl' }} color="white" fontWeight="extrabold">
             データサイエンス倶楽部 へようこそ
           </Heading>
           <HStack gap={3} flexWrap="wrap" justify="center">
@@ -61,7 +61,7 @@ export function HomePage() {
           <Heading as="h2" size="xl" textAlign="center" mb={7} color="gray.800">
             活動内容
           </Heading>
-          <SimpleGrid columns={2} gap={6}>
+          <SimpleGrid columns={{ base: 1, md: 2 }} gap={6}>
             {FEATURES.map((f) => (
               <Box
                 key={f.title}
@@ -73,12 +73,12 @@ export function HomePage() {
                 alignItems="stretch"
                 overflow="hidden"
               >
-                <Box display="flex" alignItems="center" justifyContent="center" bg="white" flexShrink={0} w="140px">
-                  <img src={f.icon} alt={f.title} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '16px' }} />
+                <Box display="flex" alignItems="center" justifyContent="center" bg="white" flexShrink={0} w={{ base: '100px', md: '140px' }}>
+                  <img src={f.icon} alt={f.title} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '12px' }} />
                 </Box>
-                <Box textAlign="left" p={6} display="flex" flexDirection="column" justifyContent="center">
+                <Box textAlign="left" p={{ base: 4, md: 6 }} display="flex" flexDirection="column" justifyContent="center">
                   <Heading as="h3" size="md" mb={2} color="gray.800">{f.title}</Heading>
-                  <Text color="gray.500" fontSize="md" lineHeight="tall">{f.desc}</Text>
+                  <Text color="gray.500" fontSize={{ base: 'sm', md: 'md' }} lineHeight="tall">{f.desc}</Text>
                 </Box>
               </Box>
             ))}

@@ -75,9 +75,9 @@ export function PostEditorPage() {
   return (
     <Container maxW="800px" py={10}>
       <VStack gap={6} align="stretch">
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align={{ base: 'flex-start', md: 'center' }} flexDir={{ base: 'column', md: 'row' }} gap={3}>
           <HStack gap={3}>
-            <Heading as="h1" size="xl" color="gray.800">
+            <Heading as="h1" size={{ base: 'lg', md: 'xl' }} color="gray.800">
               {isEdit
                 ? type === 'ACTIVITY' ? '活動記録を編集' : '技術記事を編集'
                 : type === 'ACTIVITY' ? '新しい活動記録' : '新しい技術記事'}
