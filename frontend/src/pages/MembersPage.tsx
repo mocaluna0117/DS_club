@@ -7,6 +7,19 @@ import {
 import { GET_MEMBERS, CREATE_MEMBER, UPDATE_MEMBER, REMOVE_MEMBER } from '../graphql/queries';
 import { useAuth } from '../context/AuthContext';
 
+const ROLE_OPTIONS = ['メンバー', '代表', '運営', 'OB/OG'] as const;
+const GRADE_OPTIONS = [
+  { label: 'B1', value: 1 },
+  { label: 'B2', value: 2 },
+  { label: 'B3', value: 3 },
+  { label: 'B4', value: 4 },
+  { label: '既卒', value: 5 },
+] as const;
+
+function gradeLabel(grade: number) {
+  return GRADE_OPTIONS.find((g) => g.value === grade)?.label ?? `${grade}`;
+}
+
 type MemberForm = {
   name: string;
   role: string;
@@ -14,16 +27,24 @@ type MemberForm = {
   bio: string;
   github: string;
   twitter: string;
-  imageUrl: string;
 };
 
-const INITIAL_FORM: MemberForm = { name: '', role: '', grade: 1, bio: '', github: '', twitter: '', imageUrl: '' };
+const INITIAL_FORM: MemberForm = { name: '', role: 'メンバー', grade: 1, bio: '', github: '', twitter: '' };
+
+const selectStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '8px 12px',
+  border: '1px solid #e2e8f0',
+  borderRadius: '6px',
+  fontSize: '1rem',
+  background: 'white',
+};
 
 function MemberFormFields({ form, onChange }: {
   form: MemberForm;
   onChange: (form: MemberForm) => void;
 }) {
-  const set = (key: keyof MemberForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const set = (key: keyof MemberForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     onChange({ ...form, [key]: key === 'grade' ? Number(e.target.value) : e.target.value });
 
   return (
@@ -34,11 +55,15 @@ function MemberFormFields({ form, onChange }: {
       </Field.Root>
       <Field.Root required>
         <Field.Label fontSize="sm">役割</Field.Label>
-        <Input value={form.role} onChange={set('role')} placeholder="部長 / エンジニア など" />
+        <select value={form.role} onChange={set('role')} style={selectStyle}>
+          {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
       </Field.Root>
       <Field.Root required>
-        <Field.Label fontSize="sm">回生</Field.Label>
-        <Input type="number" min={1} value={form.grade} onChange={set('grade')} />
+        <Field.Label fontSize="sm">学年</Field.Label>
+        <select value={form.grade} onChange={set('grade')} style={selectStyle}>
+          {GRADE_OPTIONS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+        </select>
       </Field.Root>
       <Field.Root>
         <Field.Label fontSize="sm">自己紹介</Field.Label>
@@ -49,12 +74,8 @@ function MemberFormFields({ form, onChange }: {
         <Input value={form.github} onChange={set('github')} placeholder="username" />
       </Field.Root>
       <Field.Root>
-        <Field.Label fontSize="sm">Twitter ユーザー名</Field.Label>
+        <Field.Label fontSize="sm">X ユーザー名</Field.Label>
         <Input value={form.twitter} onChange={set('twitter')} placeholder="username" />
-      </Field.Root>
-      <Field.Root>
-        <Field.Label fontSize="sm">プロフィール画像 URL</Field.Label>
-        <Input value={form.imageUrl} onChange={set('imageUrl')} placeholder="https://..." />
       </Field.Root>
     </VStack>
   );
@@ -88,7 +109,6 @@ export function MembersPage() {
           bio: createForm.bio || null,
           github: createForm.github || null,
           twitter: createForm.twitter || null,
-          imageUrl: createForm.imageUrl || null,
         },
       },
     });
@@ -113,7 +133,6 @@ export function MembersPage() {
           bio: editTarget.bio || null,
           github: editTarget.github || null,
           twitter: editTarget.twitter || null,
-          imageUrl: editTarget.imageUrl || null,
         },
       },
     });
@@ -245,7 +264,7 @@ export function MembersPage() {
             </Box>
             <Heading as="h2" size="md" mb={1} color="gray.800">{m.name}</Heading>
             <Text color="blue.600" fontWeight="semibold" fontSize="sm" mb={1}>{m.role}</Text>
-            <Text color="gray.400" fontSize="xs" mb={3}>{m.grade}回生</Text>
+            <Text color="gray.400" fontSize="xs" mb={3}>{gradeLabel(m.grade)}</Text>
             {m.bio && <Text color="gray.500" fontSize="sm" lineHeight="tall" mb={4}>{m.bio}</Text>}
             <Box display="flex" gap={3} justifyContent="center" mb={token ? 3 : 0}>
               {m.github && (
@@ -255,7 +274,7 @@ export function MembersPage() {
               )}
               {m.twitter && (
                 <Link href={`https://twitter.com/${m.twitter}`} target="_blank" rel="noopener noreferrer" color="blue.500" fontSize="sm">
-                  Twitter
+                  X
                 </Link>
               )}
             </Box>
@@ -272,7 +291,6 @@ export function MembersPage() {
                     bio: m.bio ?? '',
                     github: m.github ?? '',
                     twitter: m.twitter ?? '',
-                    imageUrl: m.imageUrl ?? '',
                   })}
                 >
                   編集
